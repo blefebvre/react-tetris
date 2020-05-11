@@ -1,3 +1,26 @@
+.App {
+  display: flex;
+  /* justify-content: center; */
+}
+
+.TetrisGrid {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+}
+
+.row {
+  display: flex;
+}
+
 div.cell {
-  display: inline;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-left: 1px solid black;
+  border-top: 1px solid black;
 }
