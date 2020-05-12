@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import { Shape } from "./shapes/Shape";
 
 interface Props {
   height: number;
   width: number;
+  shapes: Shape[];
 }
 
 enum CellStatus {
@@ -18,7 +20,6 @@ interface GridCellState {
 
 // The entire grid: a 2d array
 type GridState = GridCellState[][];
-type Shape = GridState;
 
 // Return 2d array of GridCellState items
 function initEmptyGrid(width: number, height: number): GridState {
@@ -52,14 +53,23 @@ export function TetrisGrid(props: Props) {
   // All the shapes will be merged into the above gridState to be rendered
   const [shapesState, setShapesState] = useState<GridState[]>([getLineShape(width, height)]);
 
-  function moveUnstuckShapesDown(): GridState {
-    // Start with the first shape, creating the overall grid as we go
-    let grid = initEmptyGrid(width, height);
-    // Loop through all shapes
+  // Tracks the index of the current shape
+  const [shapeIndex, setShapeIndex] = useState(0);
+
+  // Tracks where the current shape is, vertically
+  const [currentShapeVerticalIndex, setCurrentShapeVerticalIndex] = useState(0);
+
+  // Drop new shapes in the middle
+  const [currentShapeHorizontalIndex, setCurrentShapeHorizontalIndex] = useState(Math.floor(width / 2));
+
+  function moveCurrentShapeDown(): GridState {
+    // Create the overall grid as we go, based on current state of the grid
+    let grid = [...gridState];
+    // Get the current shape
     const updatedShapesState = [...shapesState];
     for (let i = 0; i < updatedShapesState.length; i++) {
       const shape = updatedShapesState[i];
-      let updatedShape: Shape = [...shape];
+      let updatedShape: GridState = [...shape];
       // Is this shape at the bottom?
       if (isShapeAtTheBottomOfGrid(shape)) {
         // It can't move down then!
@@ -87,7 +97,7 @@ export function TetrisGrid(props: Props) {
     function () {
       // Main tetris game loop
       setTimeout(function () {
-        const updatedGridState = moveUnstuckShapesDown();
+        const updatedGridState = moveCurrentShapeDown();
         setGridState(updatedGridState);
         // console.log(updatedGridState);
         // clearInterval(mainLoopIntervalId);
@@ -112,7 +122,7 @@ export function TetrisGrid(props: Props) {
   );
 }
 
-function isShapeAtTheBottomOfGrid(shape: Shape): boolean {
+function isShapeAtTheBottomOfGrid(shape: GridState): boolean {
   const lastRowIndex = shape.length - 1;
   // If any of the cells in the last row are NOT empty, we're at the bottom
   for (let j = 0; j < shape[lastRowIndex].length; j++) {
@@ -124,7 +134,7 @@ function isShapeAtTheBottomOfGrid(shape: Shape): boolean {
   return false;
 }
 
-function doesShapeCollideWithAnother(shape: Shape, grid: GridState): boolean {
+function doesShapeCollideWithAnother(shape: GridState, grid: GridState): boolean {
   for (let i = 0; i < shape.length; i++) {
     for (let j = 0; j < shape[i].length; j++) {
       if (shape[i][j].status !== CellStatus.EMPTY && grid[i][j].status !== CellStatus.EMPTY) {
@@ -136,7 +146,7 @@ function doesShapeCollideWithAnother(shape: Shape, grid: GridState): boolean {
   return false;
 }
 
-function putShapeIntoGrid(shape: Shape, grid: GridState): GridState {
+function putShapeIntoGrid(shape: GridState, grid: GridState): GridState {
   for (let i = 0; i < shape.length; i++) {
     for (let j = 0; j < shape[i].length; j++) {
       if (shape[i][j].status !== CellStatus.EMPTY) {
@@ -147,7 +157,7 @@ function putShapeIntoGrid(shape: Shape, grid: GridState): GridState {
   return grid;
 }
 
-function moveShapeDown(shape: Shape): Shape {
+function moveShapeDown(shape: GridState): GridState {
   // Since the top-left of the Grid is 0,0, moving down can be done by adding a new  row to the
   // "top" and deleting the last row
   const movedShape = [...shape];
@@ -159,7 +169,7 @@ function moveShapeDown(shape: Shape): Shape {
   return movedShape;
 }
 
-function getLineShape(width: number, height: number): Shape {
+function getLineShape(width: number, height: number): GridState {
   const shape = initEmptyGrid(width, height);
   shape[0][0] = {
     color: "1",
