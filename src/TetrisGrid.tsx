@@ -44,14 +44,14 @@ function getEmptyRow(width: number): GridCellState[] {
 let mainLoopIntervalId: any;
 
 export function TetrisGrid(props: Props) {
-  const { width, height } = props;
+  const { width, height, shapes } = props;
 
   // The state of the grid. Initially empty
   const [gridState, setGridState] = useState<GridState>(initEmptyGrid(width, height));
 
   // Each shape will be represented by it's own GridState.
   // All the shapes will be merged into the above gridState to be rendered
-  const [shapesState, setShapesState] = useState<GridState[]>([getLineShape(width, height)]);
+  const [shapeGridState, setShapeGridState] = useState<GridState>();
 
   // Tracks the index of the current shape
   const [shapeIndex, setShapeIndex] = useState(0);
@@ -63,33 +63,49 @@ export function TetrisGrid(props: Props) {
   const [currentShapeHorizontalIndex, setCurrentShapeHorizontalIndex] = useState(Math.floor(width / 2));
 
   function moveCurrentShapeDown(): GridState {
+    if (shapeIndex >= shapes.length) {
+      // End of the array of provided shapes! Level done.
+      console.log("end of the shapes!");
+      return gridState;
+    }
+
     // Create the overall grid as we go, based on current state of the grid
     let grid = [...gridState];
-    // Get the current shape
-    const updatedShapesState = [...shapesState];
-    for (let i = 0; i < updatedShapesState.length; i++) {
-      const shape = updatedShapesState[i];
-      let updatedShape: GridState = [...shape];
-      // Is this shape at the bottom?
-      if (isShapeAtTheBottomOfGrid(shape)) {
-        // It can't move down then!
-        console.log("shape is at the bottom!");
-      } else {
-        // It's not yet at the bottom
-        // Move it down by 1, into a temp Shape
-        updatedShape = moveShapeDown(shape);
-        console.log("updatedShape:", updatedShape);
-        // In it's new spot, will it collide with another shape?
-        if (doesShapeCollideWithAnother(updatedShape, grid)) {
-          console.log("shape COLLIDES - can't move it!");
-          // Revert move. Shape can't move here!
-          updatedShape = [...shape];
-        }
+    // Grid state with the current shape in it
+    let updatedShapesState: GridState;
+
+    if (!shapeGridState) {
+      // There is no current active shape. pick the next one
+      let currentShape = shapes[shapeIndex];
+      // Create a new GridState with the new shape in it, in the middle
+      updatedShapesState = getGridStateForNewShape(currentShape, width, height);
+    }
+
+    // TODO! keep going here!!!
+
+    updatedShapesState = [...shapeGridState];
+
+    const shape = updatedShapesState[i];
+    let updatedShape: GridState = [...shape];
+    // Is this shape at the bottom?
+    if (isShapeAtTheBottomOfGrid(shape)) {
+      // It can't move down then!
+      console.log("shape is at the bottom!");
+    } else {
+      // It's not yet at the bottom
+      // Move it down by 1, into a temp Shape
+      updatedShape = moveShapeDown(shape);
+      console.log("updatedShape:", updatedShape);
+      // In it's new spot, will it collide with another shape?
+      if (doesShapeCollideWithAnother(updatedShape, grid)) {
+        console.log("shape COLLIDES - can't move it!");
+        // Revert move. Shape can't move here!
+        updatedShape = [...shape];
       }
       updatedShapesState[i] = updatedShape;
       grid = putShapeIntoGrid(updatedShape, grid);
     }
-    setShapesState(updatedShapesState);
+    setShapeGridState(updatedShapesState);
     return grid;
   }
 
@@ -103,7 +119,7 @@ export function TetrisGrid(props: Props) {
         // clearInterval(mainLoopIntervalId);
       }, 1000); // Run once a second
     },
-    [shapesState]
+    [shapeGridState]
   );
 
   // Output the TetrisGrid
@@ -169,7 +185,7 @@ function moveShapeDown(shape: GridState): GridState {
   return movedShape;
 }
 
-function getLineShape(width: number, height: number): GridState {
+/* function getLineShape(width: number, height: number): GridState {
   const shape = initEmptyGrid(width, height);
   shape[0][0] = {
     color: "1",
@@ -188,4 +204,25 @@ function getLineShape(width: number, height: number): GridState {
     status: CellStatus.FULL,
   };
   return shape;
+} */
+
+function getGridStateForNewShape(shape: Shape, width: number, height: number): GridState {
+  const middleIndex = Math.floor(width / 2) - 1;
+  const newShapeGrid = initEmptyGrid(width, height);
+
+  // Assumes grid will always be big enough for the shape!
+  // shape.positions.length is the HEIGHT of the new shape
+  for (let i = 0; i < shape.positions.length; i++) {
+    for (let j = 0; j < shape.positions[i].length; j++) {
+      const currentPositionFlag = shape.positions[i][j];
+      if (currentPositionFlag) {
+        // Set the grid cell to ON!
+        newShapeGrid[i][j + middleIndex] = {
+          color: "1",
+          status: CellStatus.FULL,
+        };
+      }
+    }
+  }
+  return newShapeGrid;
 }
