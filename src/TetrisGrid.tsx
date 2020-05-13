@@ -46,35 +46,42 @@ let mainLoopIntervalId: any;
 export function TetrisGrid(props: Props) {
   const { width, height, shapes } = props;
 
-  // The state of the grid. Initially empty
+  // The state of the Tetris grid (board). Initially empty
   const [gridState, setGridState] = useState<GridState>(initEmptyGrid(width, height));
-
-  // Each shape will be represented by it's own GridState.
-  // All the shapes will be merged into the above gridState to be rendered
-  const [shapeGridState, setShapeGridState] = useState<GridState>();
 
   // Tracks the index of the current shape
   const [shapeIndex, setShapeIndex] = useState(0);
 
-  // Tracks where the current shape is, vertically
-  const [currentShapeVerticalIndex, setCurrentShapeVerticalIndex] = useState(0);
+  // The active shape will be represented by it's own GridState
+  // Each shape will be merged with the above gridState to be rendered
+  const [activeShapeGridState, setActiveShapeGridState] = useState<GridState>(
+    getGridStateForNewShape(shapes[shapeIndex], width, height, Math.floor(width / 2) - 1)
+  );
 
-  // Drop new shapes in the middle
-  const [currentShapeHorizontalIndex, setCurrentShapeHorizontalIndex] = useState(Math.floor(width / 2));
+  // Tracks where the active shape is, vertically (y)
+  const [activeShapeVerticalIndex, setActiveShapeVerticalIndex] = useState(0);
 
-  function moveCurrentShapeDown(): GridState {
+  // If a shape can be rotated into different positions, the position can be controlled by setting this index
+  // This value is controlled by the user
+  const [activeShapePositionIndex, setActiveShapePositionIndex] = useState(0);
+
+  // Tracks where the active shape is, horizontally (x). New shapes all start in the middle
+  // This value is controlled by the user
+  const [activeShapeHorizontalIndex, setActiveShapeHorizontalIndex] = useState(Math.floor(width / 2));
+
+  function runGameStep(): void {
     if (shapeIndex >= shapes.length) {
       // End of the array of provided shapes! Level done.
       console.log("end of the shapes!");
-      return gridState;
+      return;
     }
 
     // Create the overall grid as we go, based on current state of the grid
     let grid = [...gridState];
     // Grid state with the current shape in it
     let updatedShapesState: GridState;
-
-    if (!shapeGridState) {
+    /* 
+    if (!activeShapeGridState) {
       // There is no current active shape. pick the next one
       let currentShape = shapes[shapeIndex];
       // Create a new GridState with the new shape in it, in the middle
@@ -83,7 +90,7 @@ export function TetrisGrid(props: Props) {
 
     // TODO! keep going here!!!
 
-    updatedShapesState = [...shapeGridState];
+    updatedShapesState = [...activeShapeGridState];
 
     const shape = updatedShapesState[i];
     let updatedShape: GridState = [...shape];
@@ -105,31 +112,37 @@ export function TetrisGrid(props: Props) {
       updatedShapesState[i] = updatedShape;
       grid = putShapeIntoGrid(updatedShape, grid);
     }
-    setShapeGridState(updatedShapesState);
-    return grid;
+    setActiveShapeGridState(updatedShapesState);
+
+    setGridState(grid); */
   }
 
   useEffect(
     function () {
       // Main tetris game loop
-      setTimeout(function () {
-        const updatedGridState = moveCurrentShapeDown();
-        setGridState(updatedGridState);
-        // console.log(updatedGridState);
-        // clearInterval(mainLoopIntervalId);
-      }, 1000); // Run once a second
+      //setTimeout(function () {
+      //runGameStep();
+      // console.log(updatedGridState);
+      // clearInterval(mainLoopIntervalId);
+      //}, 1000); // Run once a second
     },
-    [shapeGridState]
+    [activeShapeGridState]
   );
+
+  const mergedGridState = putShapeIntoGrid(activeShapeGridState, gridState);
 
   // Output the TetrisGrid
   return (
     <div className="TetrisGrid">
-      {gridState.map((row: Array<GridCellState>) => {
+      {gridState.map((row: Array<GridCellState>, rowIndex: number) => {
         return (
-          <div className="row">
-            {row.map((cell: GridCellState) => {
-              return <div className="cell">{cell.color}</div>;
+          <div key={`row${rowIndex}`} className="row">
+            {row.map((cell: GridCellState, cellIndex: number) => {
+              return (
+                <div key={`row${rowIndex}-cell${cellIndex}`} className="cell">
+                  {cell.color}
+                </div>
+              );
             })}
           </div>
         );
@@ -163,10 +176,10 @@ function doesShapeCollideWithAnother(shape: GridState, grid: GridState): boolean
 }
 
 function putShapeIntoGrid(shape: GridState, grid: GridState): GridState {
-  for (let i = 0; i < shape.length; i++) {
-    for (let j = 0; j < shape[i].length; j++) {
-      if (shape[i][j].status !== CellStatus.EMPTY) {
-        grid[i][j] = { ...shape[i][j] };
+  for (let y = 0; y < shape.length; y++) {
+    for (let x = 0; x < shape[y].length; x++) {
+      if (shape[y][x].status !== CellStatus.EMPTY) {
+        grid[y][x] = { ...shape[y][x] };
       }
     }
   }
@@ -185,44 +198,26 @@ function moveShapeDown(shape: GridState): GridState {
   return movedShape;
 }
 
-/* function getLineShape(width: number, height: number): GridState {
-  const shape = initEmptyGrid(width, height);
-  shape[0][0] = {
-    color: "1",
-    status: CellStatus.FULL,
-  };
-  shape[0][1] = {
-    color: "1",
-    status: CellStatus.FULL,
-  };
-  shape[0][2] = {
-    color: "1",
-    status: CellStatus.FULL,
-  };
-  shape[0][3] = {
-    color: "1",
-    status: CellStatus.FULL,
-  };
-  return shape;
-} */
-
-function getGridStateForNewShape(shape: Shape, width: number, height: number): GridState {
-  const middleIndex = Math.floor(width / 2) - 1;
+function getGridStateForNewShape(shape: Shape, width: number, height: number, xPos: number): GridState {
   const newShapeGrid = initEmptyGrid(width, height);
+
+  // Use the first position initially (index 0)
+  const shapePosition = shape.positions[0];
 
   // Assumes grid will always be big enough for the shape!
   // shape.positions.length is the HEIGHT of the new shape
-  for (let i = 0; i < shape.positions.length; i++) {
-    for (let j = 0; j < shape.positions[i].length; j++) {
-      const currentPositionFlag = shape.positions[i][j];
+  for (let row = 0; row < shapePosition.length; row++) {
+    for (let col = 0; col < shapePosition[row].length; col++) {
+      const currentPositionFlag = shapePosition[row][col];
       if (currentPositionFlag) {
         // Set the grid cell to ON!
-        newShapeGrid[i][j + middleIndex] = {
+        newShapeGrid[row][col + xPos] = {
           color: "1",
           status: CellStatus.FULL,
         };
       }
     }
   }
+  console.log("newShapeGrid", newShapeGrid);
   return newShapeGrid;
 }
