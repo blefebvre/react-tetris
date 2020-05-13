@@ -120,16 +120,17 @@ export function TetrisGrid(props: Props) {
   useEffect(
     function () {
       // Main tetris game loop
-      //setTimeout(function () {
-      runGameStep();
-      // console.log(updatedGridState);
-      // clearInterval(mainLoopIntervalId);
-      //}, 1000); // Run once a second
+      setTimeout(function () {
+        runGameStep();
+        // console.log(updatedGridState);
+        // clearInterval(mainLoopIntervalId);
+      }, 1000); // Run once a second
     },
     [activeShapeGridState]
   );
 
   const mergedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
+  console.log("mergedGridState", mergedGridState);
 
   // Output the TetrisGrid
   return (
@@ -191,14 +192,17 @@ function doesShapeCollideWithAnother(shape: GridState, grid: GridState): boolean
 }
 
 function mergeShapeIntoGrid(shape: GridState, grid: GridState): GridState {
-  for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
-      if (shape[y][x].status !== CellStatus.EMPTY) {
-        grid[y][x] = { ...shape[y][x] };
+  const mergedGridState: GridState = [];
+  for (let row = 0; row < shape.length; row++) {
+    // Copy the current row to the merged grid
+    mergedGridState[row] = [...grid[row]];
+    for (let col = 0; col < shape[row].length; col++) {
+      if (shape[row][col].status !== CellStatus.EMPTY) {
+        mergedGridState[row][col] = { ...shape[row][col] };
       }
     }
   }
-  return grid;
+  return mergedGridState;
 }
 
 function moveShapeDown(shape: GridState): GridState {
