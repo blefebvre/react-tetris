@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 import { Shape } from "./shapes/Shape";
+import { useKeyPress } from "./hooks/useKeyPress";
+import { useInterval } from "./hooks/useInterval";
 
 interface Props {
   height: number;
@@ -33,12 +35,16 @@ function initEmptyGrid(width: number, height: number): GridState {
 function getEmptyRow(width: number): GridCellState[] {
   const row = [];
   for (let col = 0; col < width; col++) {
-    row[col] = {
-      color: "0",
-      status: CellStatus.EMPTY,
-    };
+    row[col] = getEmptyCell();
   }
   return row;
+}
+
+function getEmptyCell(): GridCellState {
+  return {
+    color: "0",
+    status: CellStatus.EMPTY,
+  };
 }
 
 let mainLoopIntervalId: any;
@@ -46,9 +52,10 @@ let mainLoopIntervalId: any;
 export function TetrisGrid(props: Props) {
   const { width, height, shapes } = props;
 
+  const [loops, setLoops] = useState(0);
+
   // The state of the Tetris grid (board). Initially empty
   const [gridState, setGridState] = useState<GridState>(initEmptyGrid(width, height));
-  console.log("GRIDSTATE MAIN FUNC", gridState);
 
   // Tracks the index of the current shape
   const [shapeIndex, setShapeIndex] = useState(0);
@@ -58,75 +65,94 @@ export function TetrisGrid(props: Props) {
   const [activeShapeGridState, setActiveShapeGridState] = useState<GridState>(
     getGridStateForNewShape(shapes[shapeIndex], width, height)
   );
-
-  // Tracks where the active shape is, vertically (y)
-  const [activeShapeVerticalIndex, setActiveShapeVerticalIndex] = useState(0);
+  const activeShapeGridStateRef = useRef(activeShapeGridState);
+  activeShapeGridStateRef.current = activeShapeGridState;
 
   // If a shape can be rotated into different positions, the position can be controlled by setting this index
   // This value is controlled by the user
   const [activeShapePositionIndex, setActiveShapePositionIndex] = useState(0);
 
-  // Tracks where the active shape is, horizontally (x). New shapes all start in the middle
-  // This value is controlled by the user
-  const [activeShapeHorizontalIndex, setActiveShapeHorizontalIndex] = useState(Math.floor(width / 2));
+  const runGameStep = useCallback(
+    function runGameStep(activeShape: GridState): void {
+      if (shapeIndex >= shapes.length) {
+        // End of the array of provided shapes! Level done.
+        console.log("end of the shapes!");
+        return;
+      }
 
-  function runGameStep(): void {
-    if (shapeIndex >= shapes.length) {
-      // End of the array of provided shapes! Level done.
-      console.log("end of the shapes!");
-      return;
-    }
-
-    /* if (!activeShapeGridState) {
+      /* if (!activeShapeGridState) {
       // There is no current active shape. pick the next one
       let currentShape = shapes[shapeIndex];
       // Create a new GridState with the new shape in it, in the middle
       updatedShapesState = getGridStateForNewShape(currentShape, width, height);
     } */
 
-    // Is this shape at the bottom?
-    if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
-      // It can't move down then!
-      console.log("Active shape can't move down 1 step!");
-      console.log("gridState", gridState);
+      // Is this shape at the bottom?
+      if (canShapeMoveDown1Step(activeShape, gridState) === false) {
+        // It can't move down then!
+        console.log("Active shape can't move down 1 step!");
+        console.log("gridState", gridState);
 
-      // MERGE this shape with the gridState to make it part of the background
-      const updatedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
-      setGridState(updatedGridState);
+        // MERGE this shape with the gridState to make it part of the background
+        const updatedGridState = mergeShapeIntoGrid(activeShape, gridState);
+        setGridState(updatedGridState);
 
-      // Pick the next shape as "active"
-      const nextShapeIndex = shapeIndex + 1;
-      if (nextShapeIndex < shapes.length) {
-        setShapeIndex(nextShapeIndex);
-        setActiveShapeGridState(getGridStateForNewShape(shapes[nextShapeIndex], width, height));
-      }
-      return;
-    } else {
-      // The shape is not blocked, not at the bottom, and can move down 1 step
-      // Move it down by 1, into a temp Shape
-      console.log("Moving active shape down.");
-      const shapeMovedDown1Step = moveShapeDown(activeShapeGridState);
+        // Pick the next shape as "active"
+        const nextShapeIndex = shapeIndex + 1;
+        if (nextShapeIndex < shapes.length) {
+          setShapeIndex(nextShapeIndex);
+          setActiveShapeGridState(getGridStateForNewShape(shapes[nextShapeIndex], width, height));
+        } else {
+          clearInterval(mainLoopIntervalId);
+        }
+        return;
+      } else {
+        // The shape is not blocked, not at the bottom, and can move down 1 step
+        // Move it down by 1, into a temp Shape
+        console.log("Moving active shape down. activeShapeGridState", activeShape);
 
-      // In it's new spot, will it collide with another shape?
-      /* if (doesShapeCollideWithAnother(updatedShape, grid)) {
+        const shapeMovedDown1Step = moveShapeDown(activeShape);
+
+        // In it's new spot, will it collide with another shape?
+        /* if (doesShapeCollideWithAnother(updatedShape, grid)) {
         console.log("shape COLLIDES - can't move it!");
         // Revert move. Shape can't move here!
         updatedShape = [...shape];
       } */
-      setActiveShapeGridState(shapeMovedDown1Step);
-    }
-  }
+        setActiveShapeGridState(shapeMovedDown1Step);
+      }
+    },
+    [activeShapeGridState, gridState, shapeIndex]
+  );
+
+  useInterval(function () {
+    // Main tetris game loop
+    //mainLoopIntervalId = setInterval(function () {
+    //if (loops < 2) {
+    //setLoops(loops + 1);
+    runGameStep(activeShapeGridStateRef.current);
+    //}
+    // console.log(updatedGridState);
+    // clearInterval(mainLoopIntervalId);
+    //}, );
+  }, 1000); // Run once a second
+
+  // Handle key presses
+  const arrowLeftKeyPressed = useKeyPress("ArrowLeft");
+  const arrowRightKeyPressed = useKeyPress("ArrowRight");
 
   useEffect(
     function () {
-      // Main tetris game loop
-      setTimeout(function () {
-        runGameStep();
-        // console.log(updatedGridState);
-        // clearInterval(mainLoopIntervalId);
-      }, 1000); // Run once a second
+      if (arrowLeftKeyPressed) {
+        // Move the current shape left by 1, if there's room for it to move there
+        console.log("MOVE LEFT!");
+        // If it can move left, move it left.
+        if (canShapeMoveLeft(activeShapeGridState, gridState)) {
+          setActiveShapeGridState(moveShapeLeft(activeShapeGridState));
+        }
+      }
     },
-    [activeShapeGridState]
+    [arrowLeftKeyPressed]
   );
 
   const mergedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
@@ -157,10 +183,7 @@ function canShapeMoveDown1Step(shape: GridState, grid: GridState): boolean {
   // Find each active cell of the shape. Check for an active grid cell, or the bottom, right below it (row + 1)
   for (let row = 0; row < shape.length; row++) {
     for (let col = 0; col < shape[row].length; col++) {
-      console.log("shape[row][col].status", shape[row][col].status);
       if (shape[row][col].status !== CellStatus.EMPTY) {
-        console.log(" FOUND shape[row][col].status  !== CellStatus.EMPTY", shape[row][col].status);
-
         // This is an active shape cell. Check below it.
         // Is this shape at the bottom?
         if (row === grid.length - 1) {
@@ -177,6 +200,44 @@ function canShapeMoveDown1Step(shape: GridState, grid: GridState): boolean {
   }
   // Did not find any grid cells that would block this shape from moving down
   return true;
+}
+
+function canShapeMoveLeft(shape: GridState, grid: GridState): boolean {
+  // Check the first col of each row of the shape's grid to ensure nothing is in it
+  for (let row = 0; row < shape.length; row++) {
+    if (shape[row][0].status !== CellStatus.EMPTY) {
+      // There's part of the shape in the leftmost col! can't move left
+      return false;
+    }
+  }
+  // Need to also check that there is nothing in the grid to the left of the shape
+  for (let row = 0; row < shape.length; row++) {
+    for (let col = 0; col < shape[row].length; col++) {
+      if (shape[row][col].status !== CellStatus.EMPTY) {
+        // Found an active shape cell, which we KNOW is not in the first column (due to the check above)
+        // Check col - 1 in the grid
+        if (grid[row][col - 1].status !== CellStatus.EMPTY) {
+          // There's already something to the immediate left of the shape! can't move left
+          return false;
+        }
+      }
+    }
+  }
+  // Otherwise: CAN move left
+  return true;
+}
+
+function moveShapeLeft(shape: GridState): GridState {
+  // Remove the first column, and add a column to the end
+  const movedGridState: GridState = [];
+  for (let row = 0; row < shape.length; row++) {
+    movedGridState[row] = [...shape[row]];
+    // Remove first item in the row (first column)
+    movedGridState[row].shift();
+    // Add empty cell to the end (last column)
+    movedGridState[row].push(getEmptyCell());
+  }
+  return movedGridState;
 }
 
 function doesShapeCollideWithAnother(shape: GridState, grid: GridState): boolean {
@@ -214,6 +275,7 @@ function moveShapeDown(shape: GridState): GridState {
   const width = shape[0].length;
   // Add empty row to beginning
   movedShape.unshift(getEmptyRow(width));
+  console.log("moved shape", movedShape);
   return movedShape;
 }
 
@@ -242,6 +304,5 @@ function getGridStateForNewShape(
       }
     }
   }
-  console.log("newShapeGrid", newShapeGrid);
   return newShapeGrid;
 }
