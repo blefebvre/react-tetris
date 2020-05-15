@@ -1,7 +1,7 @@
-import { Shape } from "./Shape";
+import { Shape, ShapeMatrix } from "./Shape";
 
 export function square(): Shape {
-  const squareMatrix = [
+  const squareMatrix: ShapeMatrix = [
     [1, 1],
     [1, 1],
   ];

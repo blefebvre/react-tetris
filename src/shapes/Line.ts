@@ -1,14 +1,14 @@
-import { Shape } from "./Shape";
+import { Shape, ShapeMatrix } from "./Shape";
 
 export function line(): Shape {
   // prettier-ignore
-  const verticalLine = [
+  const verticalLine: ShapeMatrix = [
     [1],
     [1],
     [1],
     [1]
   ];
-  const horizontalLine = [[1, 1, 1, 1]];
+  const horizontalLine: ShapeMatrix = [[1, 1, 1, 1]];
   return {
     name: "square",
     positions: [verticalLine, horizontalLine], // A square rotated is the same thing

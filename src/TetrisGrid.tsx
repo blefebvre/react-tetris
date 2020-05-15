@@ -3,7 +3,7 @@ import "./App.css";
 import { Shape } from "./shapes/Shape";
 import { useKeyPress } from "./hooks/useKeyPress";
 import { useInterval } from "./hooks/useInterval";
-import { GridCellState, GridState, initEmptyGrid, getGridStateForNewShape, mergeShapeIntoGrid } from "./model/Grid";
+import { GridCellState, GridState, initEmptyGrid, getGridStateForShape, mergeShapeIntoGrid } from "./model/Grid";
 import {
   canShapeMoveDown1Step,
   moveShapeDown,
@@ -30,15 +30,24 @@ export function TetrisGrid(props: Props) {
   // Tracks the index of the current shape
   const [shapeIndex, setShapeIndex] = useState(0);
 
-  // The active shape will be represented by it's own GridState
-  // Each shape will be merged with the above gridState to be rendered
-  const [activeShapeGridState, setActiveShapeGridState] = useState<GridState>(
-    getGridStateForNewShape(shapes[shapeIndex], width, height)
-  );
-
   // If a shape can be rotated into different positions, the position can be controlled by setting this index
   // This value is controlled by the user
   const [activeShapePositionIndex, setActiveShapePositionIndex] = useState(0);
+
+  // Track the active shape's position for when we need to rotate it
+  const [activeShapeRow, setActiveShapeRow] = useState(0);
+  const [activeShapeCol, setActiveShapeCol] = useState(Math.floor(width / 2 - 1));
+
+  // The active shape will be represented by it's own GridState
+  // Each shape will be merged with the above gridState to be rendered
+  const activeShapeGridState = getGridStateForShape(
+    shapes[shapeIndex],
+    activeShapePositionIndex,
+    activeShapeRow,
+    activeShapeCol,
+    width,
+    height
+  );
 
   const runGameStep = useCallback(
     function runGameStep(): void {
@@ -51,11 +60,14 @@ export function TetrisGrid(props: Props) {
         const updatedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
         setGridState(updatedGridState);
 
-        // Pick the next shape as "active"
+        // Pick the next shape as "active", or finish the game
         const nextShapeIndex = shapeIndex + 1;
         if (nextShapeIndex < shapes.length) {
           setShapeIndex(nextShapeIndex);
-          setActiveShapeGridState(getGridStateForNewShape(shapes[nextShapeIndex], width, height));
+          // Reset the active shape's position state
+          setActiveShapeRow(0);
+          setActiveShapeCol(Math.floor(width / 2 - 1));
+          setActiveShapePositionIndex(0);
         } else {
           // Stop the game loop: done!
           console.log("Done! out of shapes.");
@@ -66,11 +78,10 @@ export function TetrisGrid(props: Props) {
         // The shape is not blocked, not at the bottom, and CAN move down 1 step
         // Move it down by 1, into a temp Shape
         console.log("Moving active shape down.");
-        const shapeMovedDown1Step = moveShapeDown(activeShapeGridState);
-        setActiveShapeGridState(shapeMovedDown1Step);
+        setActiveShapeRow(activeShapeRow + 1);
       }
     },
-    [activeShapeGridState, gridState, height, shapeIndex, shapes, width]
+    [activeShapeGridState, activeShapeRow, gridState, shapeIndex, shapes.length]
   );
 
   ////////////////////////
@@ -93,7 +104,7 @@ export function TetrisGrid(props: Props) {
         // Move the current shape left by 1, if there's room for it to move there
         console.log("MOVE LEFT!");
         if (canShapeMoveLeft(activeShapeGridState, gridState)) {
-          setActiveShapeGridState(moveShapeLeft(activeShapeGridState));
+          setActiveShapeCol(activeShapeCol - 1);
         }
       }
     },
@@ -109,7 +120,7 @@ export function TetrisGrid(props: Props) {
         // Move the current shape right by 1, if there's room for it to move there
         console.log("MOVE RIGHT!");
         if (canShapeMoveRight(activeShapeGridState, gridState)) {
-          setActiveShapeGridState(moveShapeRight(activeShapeGridState));
+          setActiveShapeCol(activeShapeCol + 1);
         }
       }
     },

@@ -1,4 +1,4 @@
-import { Shape } from "../shapes/Shape";
+import { Shape, ShapeMatrix } from "../shapes/Shape";
 
 // Grid related model types
 
@@ -39,26 +39,28 @@ export function getEmptyCell(): GridCellState {
   };
 }
 
-export function getGridStateForNewShape(
+export function getGridStateForShape(
   shape: Shape,
-  width: number,
-  height: number,
-  xPos = Math.floor(width / 2) - 1
+  positionIndex: number,
+  shapeRow: number,
+  shapeCol: number,
+  gridWidth: number,
+  gridHeight: number
 ): GridState {
-  const newShapeGrid = initEmptyGrid(width, height);
+  const newShapeGrid = initEmptyGrid(gridWidth, gridHeight);
 
-  // Use the first position initially (index 0)
-  const shapePosition = shape.positions[0];
+  // Choose the shape's position (this is how rotation is implemented)
+  const shapePosition: ShapeMatrix = shape.positions[positionIndex % shape.positions.length];
 
   // Assumes grid will always be big enough for the shape!
-  // shape.positions.length is the HEIGHT of the new shape
+  // shapePosition.length is the HEIGHT of the new shape
   for (let row = 0; row < shapePosition.length; row++) {
     for (let col = 0; col < shapePosition[row].length; col++) {
-      const currentPositionFlag = shapePosition[row][col];
-      if (currentPositionFlag) {
+      const currentCellFlag = shapePosition[row][col];
+      if (currentCellFlag === 1) {
         // Set the grid cell to ON!
-        newShapeGrid[row][col + xPos] = {
-          color: "1",
+        newShapeGrid[row + shapeRow][col + shapeCol] = {
+          color: shape.color || "1",
           status: CellStatus.FULL,
         };
       }
