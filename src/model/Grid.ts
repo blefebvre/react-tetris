@@ -15,6 +15,16 @@ export interface GridCellState {
 // The entire grid: a 2d array
 export type GridState = GridCellState[][];
 
+export enum Result {
+  SUCCESS,
+  FAILURE,
+}
+
+export interface NewGridStateResult {
+  kind: Result;
+  gridState: GridState;
+}
+
 // Return 2d array of GridCellState items
 export function initEmptyGrid(width: number, height: number): GridState {
   const grid: Array<Array<GridCellState>> = [];
@@ -46,7 +56,7 @@ export function getGridStateForShape(
   shapeCol: number,
   gridWidth: number,
   gridHeight: number
-): GridState {
+): NewGridStateResult {
   const newShapeGrid = initEmptyGrid(gridWidth, gridHeight);
 
   // Choose the shape's position (this is how rotation is implemented)
@@ -59,14 +69,27 @@ export function getGridStateForShape(
       const currentCellFlag = shapePosition[row][col];
       if (currentCellFlag === 1) {
         // Set the grid cell to ON!
-        newShapeGrid[row + shapeRow][col + shapeCol] = {
+        const currentCellRowIndex = row + shapeRow;
+        const currentCellColIndex = col + shapeCol;
+        // It's possible that - due to rotation - a cell could be attempted to be set which is
+        // "out of bounds" of the grid. Return a failure in this case
+        if (currentCellRowIndex >= newShapeGrid.length || currentCellColIndex >= newShapeGrid[row].length) {
+          return {
+            kind: Result.FAILURE,
+            gridState: newShapeGrid,
+          };
+        }
+        newShapeGrid[currentCellRowIndex][currentCellColIndex] = {
           color: shape.color || "1",
           status: CellStatus.FULL,
         };
       }
     }
   }
-  return newShapeGrid;
+  return {
+    kind: Result.SUCCESS,
+    gridState: newShapeGrid,
+  };
 }
 
 export function mergeShapeIntoGrid(shape: GridState, grid: GridState): GridState {
