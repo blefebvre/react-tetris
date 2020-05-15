@@ -7,6 +7,7 @@ export function square(): Shape {
   ];
   return {
     name: "square",
+    color: "red",
     positions: [squareMatrix], // A square rotated is the same thing
   };
 }

@@ -7,7 +7,7 @@ import { square } from "./shapes/Square";
 export function App() {
   return (
     <div className="App">
-      <TetrisGrid width={10} height={15} shapes={[line(), square()]} />
+      <TetrisGrid width={10} height={15} shapes={[line(), square(), line(), square(), line(), square()]} />
     </div>
   );
 }

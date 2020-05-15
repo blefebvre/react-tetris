@@ -185,9 +185,11 @@ export function TetrisGrid(props: Props) {
             {/* Loop through each CELL in the current row */}
             {row.map((cell: GridCellState, cellIndex: number) => {
               return (
-                <div key={`row${rowIndex}-cell${cellIndex}`} className="cell">
-                  {cell.color}
-                </div>
+                <div
+                  key={`row${rowIndex}-cell${cellIndex}`}
+                  className="cell"
+                  style={{ backgroundColor: cell.color || "white" }}
+                ></div>
               );
             })}
           </div>

@@ -44,7 +44,7 @@ export function getEmptyRow(width: number): GridCellState[] {
 
 export function getEmptyCell(): GridCellState {
   return {
-    color: "0",
+    color: "white",
     status: CellStatus.EMPTY,
   };
 }
