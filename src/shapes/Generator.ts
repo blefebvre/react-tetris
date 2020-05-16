@@ -1,9 +1,21 @@
+import { Shape } from "./Shape";
 import { square } from "./Square";
 import { line } from "./Line";
-import { Shape } from "./Shape";
 import { hockeyStick } from "./HockeyStick";
+import { sShape } from "./sShape";
+import { jShape } from "./jShape";
+import { zShape } from "./zShape";
+import { tShape } from "./tShape";
 
-const knownShapes = [() => square(), () => line(), () => hockeyStick()];
+const knownShapes = [
+  () => square(),
+  () => line(),
+  () => hockeyStick(),
+  () => sShape(),
+  () => jShape(),
+  () => zShape(),
+  () => tShape(),
+];
 
 function getRandomShapeIndex(): number {
   // Find a number between 0 and the length of knownShapes
