@@ -105,3 +105,41 @@ export function mergeShapeIntoGrid(shape: GridState, grid: GridState): GridState
   }
   return mergedGridState;
 }
+
+function isRowComplete(row: GridCellState[]): boolean {
+  for (let col = 0; col < row.length; col++) {
+    if (row[col].status === CellStatus.EMPTY) {
+      // Short-circuit as soon as we find a single empty cell
+      return false;
+    }
+  }
+  // Made it through the entire row without finding an empty cell, so this row is complete!
+  return true;
+}
+
+export function areThereAnyCompleteRows(grid: GridState): boolean {
+  // Search up from the bottom, which is where the complete rows are likely to be found
+  for (let row = grid.length - 1; row >= 0; row--) {
+    if (isRowComplete(grid[row])) {
+      // Complete row found!
+      return true;
+    }
+  }
+  // Did not find any complete rows
+  return false;
+}
+
+export function removeCompleteRows(grid: GridState): GridState {
+  const gridWithCompleteRowsReplaced = [];
+  for (let row = 0; row < grid.length; row++) {
+    if (isRowComplete(grid[row])) {
+      // Complete row found!
+      // Unshift an empty row instead of the current grid row
+      gridWithCompleteRowsReplaced.unshift(getEmptyRow(grid[row].length));
+    } else {
+      // This row is not complete: add it as-is to the end of gridWithCompleteRowsReplaced
+      gridWithCompleteRowsReplaced.push([...grid[row]]);
+    }
+  }
+  return gridWithCompleteRowsReplaced;
+}

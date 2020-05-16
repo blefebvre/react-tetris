@@ -10,6 +10,8 @@ import {
   getGridStateForShape,
   mergeShapeIntoGrid,
   Result,
+  areThereAnyCompleteRows,
+  removeCompleteRows,
 } from "./model/Grid";
 import {
   canShapeMoveDown1Step,
@@ -59,8 +61,13 @@ export function TetrisGrid(props: Props) {
   }
 
   function runGameStep(): void {
-    // Is this shape at the bottom?
-    if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
+    // Are there any complete rows?
+    if (areThereAnyCompleteRows(gridState)) {
+      // Remove the completed rows, and replace them with empty rows at the top of the grid
+      setGridState(removeCompleteRows(gridState));
+    }
+    // Does the currently active shape have room to move down 1 step?
+    else if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
       // It can't move down then!
       console.log("Active shape CAN'T move down 1 step!");
 
