@@ -1,8 +1,9 @@
 import { square } from "./Square";
 import { line } from "./Line";
 import { Shape } from "./Shape";
+import { hockeyStick } from "./HockeyStick";
 
-const knownShapes = [() => square(), () => line()];
+const knownShapes = [() => square(), () => line(), () => hockeyStick()];
 
 function getRandomShapeIndex(): number {
   // Find a number between 0 and the length of knownShapes

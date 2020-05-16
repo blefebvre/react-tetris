@@ -153,11 +153,11 @@ export function TetrisGrid(props: Props) {
           height
         );
         if (proposedShapeGridResult.kind === Result.SUCCESS) {
-          // The shape does not extend past the edges of the grid. Check if it collides with
-          // any existing cells in the gridState
+          // Success means that the rotated shape does not extend past the edges of the grid.
+          // Next, check if it collides with any existing cells in the gridState
           if (doesShapeCollideWithAnother(proposedShapeGridResult.gridState, gridState) === false) {
             // The shape does not collide with an existing active cell in the grid: update position
-            console.log("New shape position (rotation) does not collide with any existing active cells!");
+            console.log("Rotated shape does not collide with any existing active cells!");
             setActiveShapePositionIndex(newPositionIndex);
           } else {
             console.log("Can't rotate the shape in this direction: collision!");
@@ -165,11 +165,24 @@ export function TetrisGrid(props: Props) {
         } else {
           console.log("Can't rotate the shape in this direction: off grid!");
         }
-        // Otherw
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [arrowUpKeyPressed]
+  );
+
+  useEffect(
+    function () {
+      if (arrowDownKeyPressed) {
+        // Move the current shape down by 1, if there's room for it to move
+        console.log("MOVE DOWN!");
+        if (canShapeMoveDown1Step(activeShapeGridState, gridState)) {
+          setActiveShapeRow(activeShapeRow + 1);
+        }
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [arrowDownKeyPressed]
   );
 
   // Put the current shape and the grid together
