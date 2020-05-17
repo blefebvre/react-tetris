@@ -1,6 +1,6 @@
 .App {
   display: flex;
-  /* justify-content: center; */
+  justify-content: center;
 }
 
 .TetrisGrid {
@@ -23,4 +23,31 @@ div.cell {
   height: 30px;
   border-left: 1px solid black;
   border-top: 1px solid black;
+}
+
+.Controls {
+  display: flex;
+  flex-direction: column;
+  margin-top: 3px;
+}
+
+.Controls button {
+  padding: 0;
+  height: 30px;
+  width: 30px;
+  margin: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Controls button span {
+  position: relative;
+  top: 2px;
+}
+
+.Controls-TopRow,
+.Controls-BottomRow {
+  display: flex;
+  justify-content: center;
 }

@@ -113,14 +113,18 @@ export function TetrisGrid(props: Props) {
   const arrowUpKeyPressed = useKeyPress("ArrowUp");
   const arrowDownKeyPressed = useKeyPress("ArrowDown");
 
+  function moveLeft(): void {
+    // Move the current shape left by 1, if there's room for it to move there
+    console.log("MOVE LEFT!");
+    if (canShapeMoveLeft(activeShapeGridState, gridState)) {
+      setActiveShapeCol(activeShapeCol - 1);
+    }
+  }
+
   useEffect(
     function () {
       if (arrowLeftKeyPressed) {
-        // Move the current shape left by 1, if there's room for it to move there
-        console.log("MOVE LEFT!");
-        if (canShapeMoveLeft(activeShapeGridState, gridState)) {
-          setActiveShapeCol(activeShapeCol - 1);
-        }
+        moveLeft();
       }
     },
     // With react-hooks/exhaustive-deps rule "fixed", pressing an arrow key results in the shape
@@ -129,14 +133,18 @@ export function TetrisGrid(props: Props) {
     [arrowLeftKeyPressed]
   );
 
+  function moveRight(): void {
+    // Move the current shape right by 1, if there's room for it to move there
+    console.log("MOVE RIGHT!");
+    if (canShapeMoveRight(activeShapeGridState, gridState)) {
+      setActiveShapeCol(activeShapeCol + 1);
+    }
+  }
+
   useEffect(
     function () {
       if (arrowRightKeyPressed) {
-        // Move the current shape right by 1, if there's room for it to move there
-        console.log("MOVE RIGHT!");
-        if (canShapeMoveRight(activeShapeGridState, gridState)) {
-          setActiveShapeCol(activeShapeCol + 1);
-        }
+        moveRight();
       }
     },
     // With react-hooks/exhaustive-deps rule "fixed", pressing an arrow key results in the shape
@@ -145,47 +153,55 @@ export function TetrisGrid(props: Props) {
     [arrowRightKeyPressed]
   );
 
+  function rotateShape(): void {
+    // Move the current shape right by 1, if there's room for it to move there
+    console.log("Up key pressed - change shape position!");
+    const newPositionIndex = activeShapePositionIndex + 1;
+    const proposedShapeGridResult = getGridStateForShape(
+      shapes[shapeIndex],
+      newPositionIndex, // Note: using the new index
+      activeShapeRow,
+      activeShapeCol,
+      width,
+      height
+    );
+    if (proposedShapeGridResult.kind === Result.SUCCESS) {
+      // Success means that the rotated shape does not extend past the edges of the grid.
+      // Next, check if it collides with any existing cells in the gridState
+      if (doesShapeCollideWithAnother(proposedShapeGridResult.gridState, gridState) === false) {
+        // The shape does not collide with an existing active cell in the grid: update position
+        console.log("Rotated shape does not collide with any existing active cells!");
+        setActiveShapePositionIndex(newPositionIndex);
+      } else {
+        console.log("Can't rotate the shape in this direction: collision!");
+      }
+    } else {
+      console.log("Can't rotate the shape in this direction: off grid!");
+    }
+  }
+
   useEffect(
     function () {
       if (arrowUpKeyPressed) {
-        // Move the current shape right by 1, if there's room for it to move there
-        console.log("Up key pressed - change shape position!");
-        const newPositionIndex = activeShapePositionIndex + 1;
-        const proposedShapeGridResult = getGridStateForShape(
-          shapes[shapeIndex],
-          newPositionIndex, // Note: using the new index
-          activeShapeRow,
-          activeShapeCol,
-          width,
-          height
-        );
-        if (proposedShapeGridResult.kind === Result.SUCCESS) {
-          // Success means that the rotated shape does not extend past the edges of the grid.
-          // Next, check if it collides with any existing cells in the gridState
-          if (doesShapeCollideWithAnother(proposedShapeGridResult.gridState, gridState) === false) {
-            // The shape does not collide with an existing active cell in the grid: update position
-            console.log("Rotated shape does not collide with any existing active cells!");
-            setActiveShapePositionIndex(newPositionIndex);
-          } else {
-            console.log("Can't rotate the shape in this direction: collision!");
-          }
-        } else {
-          console.log("Can't rotate the shape in this direction: off grid!");
-        }
+        rotateShape();
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [arrowUpKeyPressed]
   );
 
+  function moveDown(): void {
+    // Move the current shape down by 1, if there's room for it to move
+    console.log("MOVE DOWN!");
+    if (canShapeMoveDown1Step(activeShapeGridState, gridState)) {
+      setActiveShapeRow(activeShapeRow + 1);
+    }
+  }
+
   useEffect(
     function () {
       if (arrowDownKeyPressed) {
-        // Move the current shape down by 1, if there's room for it to move
-        console.log("MOVE DOWN!");
-        if (canShapeMoveDown1Step(activeShapeGridState, gridState)) {
-          setActiveShapeRow(activeShapeRow + 1);
-        }
+        moveDown();
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -197,24 +213,53 @@ export function TetrisGrid(props: Props) {
 
   // Output the TetrisGrid based on this mergedGridState
   return (
-    <div className="TetrisGrid">
-      {/* Loop through each ROW of the grid matrix */}
-      {mergedGridState.map((row: Array<GridCellState>, rowIndex: number) => {
-        return (
-          <div key={`row${rowIndex}`} className="row">
-            {/* Loop through each CELL in the current row */}
-            {row.map((cell: GridCellState, cellIndex: number) => {
-              return (
-                <div
-                  key={`row${rowIndex}-cell${cellIndex}`}
-                  className="cell"
-                  style={{ backgroundColor: cell.color || "white" }}
-                ></div>
-              );
-            })}
-          </div>
-        );
-      })}
+    <div className="Tetris">
+      <div className="TetrisGrid">
+        {/* Loop through each ROW of the grid matrix */}
+        {mergedGridState.map((row: Array<GridCellState>, rowIndex: number) => {
+          return (
+            <div key={`row${rowIndex}`} className="row">
+              {/* Loop through each CELL in the current row */}
+              {row.map((cell: GridCellState, cellIndex: number) => {
+                return (
+                  <div
+                    key={`row${rowIndex}-cell${cellIndex}`}
+                    className="cell"
+                    style={{ backgroundColor: cell.color || "white" }}
+                  ></div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      <div className="Controls">
+        {/* Controls for devices without keyboards */}
+        <div className="Controls-TopRow">
+          <button onClick={() => rotateShape()}>
+            <span role="img" aria-label="rotate arrow button (counter clockwise)">
+              🔄
+            </span>
+          </button>
+        </div>
+        <div className="Controls-BottomRow">
+          <button onClick={() => moveLeft()}>
+            <span role="img" aria-label="left arrow button">
+              ⏪
+            </span>
+          </button>
+          <button onClick={() => moveDown()}>
+            <span role="img" aria-label="down arrow button">
+              ⏬
+            </span>
+          </button>
+          <button onClick={() => moveRight()}>
+            <span role="img" aria-label="right arrow button">
+              ⏩
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

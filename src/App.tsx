@@ -8,7 +8,8 @@ import { square } from "./shapes/Square";
 export function App() {
   return (
     <div className="App">
-      <TetrisGrid width={10} height={15} shapes={getRandomShapes(3)} />
+      <TetrisGrid width={10} height={15} shapes={getRandomShapes(30)} />
+      {/* <TetrisGrid width={10} height={15} shapes={[line(), line(), square(), square(), square(), square(), square()]} /> */}
     </div>
   );
 }
