@@ -61,18 +61,18 @@ export function TetrisGrid(props: Props) {
   }
 
   function runGameStep(): void {
-    // Are there any complete rows?
-    if (areThereAnyCompleteRows(gridState)) {
-      // Remove the completed rows, and replace them with empty rows at the top of the grid
-      setGridState(removeCompleteRows(gridState));
-    }
     // Does the currently active shape have room to move down 1 step?
-    else if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
+    if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
       // It can't move down then!
       console.log("Active shape CAN'T move down 1 step!");
 
       // MERGE this shape with the gridState to make it part of the background
-      const updatedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
+      let updatedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
+      // Are there any complete rows?
+      if (areThereAnyCompleteRows(updatedGridState)) {
+        // Remove the completed rows, and replace them with empty rows at the top of the grid
+        updatedGridState = removeCompleteRows(updatedGridState);
+      }
       setGridState(updatedGridState);
 
       // Pick the next shape as "active", or finish the game
