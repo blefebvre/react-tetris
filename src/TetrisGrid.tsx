@@ -214,7 +214,7 @@ export function TetrisGrid(props: Props) {
   // Output the TetrisGrid based on this mergedGridState
   return (
     <div className="Tetris">
-      <div className="TetrisGrid">
+      <div className="Grid">
         {/* Loop through each ROW of the grid matrix */}
         {mergedGridState.map((row: Array<GridCellState>, rowIndex: number) => {
           return (
