@@ -1,6 +1,12 @@
 .App {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 5px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  touch-action: manipulation; /* disable double tab to zoon */
 }
 
 .Grid {
@@ -32,22 +38,24 @@ div.cell {
 }
 
 .Controls button {
+  height: 50px;
+  width: 50px;
   padding: 0;
-  height: 30px;
-  width: 30px;
-  margin: 3px;
+  margin: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.Controls button span {
-  position: relative;
-  top: 2px;
+  -webkit-appearance: none;
+  border-radius: 0;
+  touch-action: manipulation; /* disable double tab to zoon */
 }
 
 .Controls-TopRow,
 .Controls-BottomRow {
   display: flex;
   justify-content: center;
+}
+
+footer {
+  font-size: 14px;
 }
