@@ -129,17 +129,27 @@ export function areThereAnyCompleteRows(grid: GridState): boolean {
   return false;
 }
 
-export function removeCompleteRows(grid: GridState): GridState {
+interface RowRemovalResult {
+  grid: GridState;
+  completeRowCount: number;
+}
+
+export function removeCompleteRows(grid: GridState): RowRemovalResult {
   const gridWithCompleteRowsReplaced = [];
+  let completeRowCount = 0;
   for (let row = 0; row < grid.length; row++) {
     if (isRowComplete(grid[row])) {
       // Complete row found!
       // Unshift an empty row instead of the current grid row
+      completeRowCount++;
       gridWithCompleteRowsReplaced.unshift(getEmptyRow(grid[row].length));
     } else {
       // This row is not complete: add it as-is to the end of gridWithCompleteRowsReplaced
       gridWithCompleteRowsReplaced.push([...grid[row]]);
     }
   }
-  return gridWithCompleteRowsReplaced;
+  return {
+    completeRowCount,
+    grid: gridWithCompleteRowsReplaced,
+  };
 }

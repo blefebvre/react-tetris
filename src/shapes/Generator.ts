@@ -22,7 +22,7 @@ function getRandomShapeIndex(): number {
   return Math.floor(Math.random() * knownShapes.length);
 }
 
-const colors = ["blue", "green", "yellow", "red", "pink"];
+const colors = ["blue", "green", "orange", "red", "pink", "lightgray"];
 
 function getRandomColorIndex(): number {
   // Find a number between 0 and the length of colors

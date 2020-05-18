@@ -19,17 +19,24 @@ import {
   canShapeMoveRight,
   doesShapeCollideWithAnother,
 } from "./physics/Movement";
+import { Score } from "./Score";
+import { Controls } from "./Controls";
 
 interface Props {
   height: number;
   width: number;
   shapes: Shape[];
+  level: number;
 }
 
 export function TetrisGrid(props: Props) {
-  const { width, height, shapes } = props;
+  const { width, height, shapes, level } = props;
 
+  // Is the main game loop running?
   const [isRunning, setIsRunning] = useState(true);
+
+  // Player's score. Updated when a complete row is removed.
+  const [score, setScore] = useState(0);
 
   // The state of the Tetris grid (board). Initially empty
   const [gridState, setGridState] = useState<GridState>(initEmptyGrid(width, height));
@@ -71,7 +78,10 @@ export function TetrisGrid(props: Props) {
       // Are there any complete rows?
       if (areThereAnyCompleteRows(updatedGridState)) {
         // Remove the completed rows, and replace them with empty rows at the top of the grid
-        updatedGridState = removeCompleteRows(updatedGridState);
+        const rowRemovalResult = removeCompleteRows(updatedGridState);
+        updatedGridState = rowRemovalResult.grid;
+        // Update the player's score
+        setScore(score + rowRemovalResult.completeRowCount * 10);
       }
       setGridState(updatedGridState);
 
@@ -233,33 +243,8 @@ export function TetrisGrid(props: Props) {
           );
         })}
       </div>
-      <div className="Controls">
-        {/* Controls for devices without keyboards */}
-        <div className="Controls-TopRow">
-          <button onClick={() => rotateShape()}>
-            <span role="img" aria-label="rotate arrow button (counter clockwise)">
-              🔄
-            </span>
-          </button>
-        </div>
-        <div className="Controls-BottomRow">
-          <button onClick={() => moveLeft()}>
-            <span role="img" aria-label="left arrow button">
-              ⏪
-            </span>
-          </button>
-          <button onClick={() => moveDown()}>
-            <span role="img" aria-label="down arrow button">
-              ⏬
-            </span>
-          </button>
-          <button onClick={() => moveRight()}>
-            <span role="img" aria-label="right arrow button">
-              ⏩
-            </span>
-          </button>
-        </div>
-      </div>
+      <Score level={level} score={score} />
+      <Controls rotateShape={rotateShape} moveLeft={moveLeft} moveDown={moveDown} moveRight={moveRight} />
     </div>
   );
 }

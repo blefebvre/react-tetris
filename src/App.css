@@ -12,8 +12,8 @@
 .Grid {
   display: flex;
   flex-direction: column;
-  border-right: 1px solid black;
-  border-bottom: 1px solid black;
+  border-right: 1px solid #444;
+  border-bottom: 1px solid #444;
 }
 
 .row {
@@ -27,14 +27,13 @@ div.cell {
   align-items: center;
   width: 30px;
   height: 30px;
-  border-left: 1px solid black;
-  border-top: 1px solid black;
+  border-left: 1px solid #444;
+  border-top: 1px solid #444;
 }
 
 .Controls {
   display: flex;
   flex-direction: column;
-  margin-top: 3px;
 }
 
 .Controls button {
@@ -58,4 +57,9 @@ div.cell {
 
 footer {
   font-size: 14px;
+}
+
+.Score {
+  display: flex;
+  justify-content: space-between;
 }
