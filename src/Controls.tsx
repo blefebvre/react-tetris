@@ -23,17 +23,17 @@ export function Controls(props: Props) {
       <div className="Controls-BottomRow">
         <button onClick={() => moveLeft()}>
           <span role="img" aria-label="left arrow button">
-            ⏪
+            ⬅️
           </span>
         </button>
         <button onClick={() => moveDown()}>
           <span role="img" aria-label="down arrow button">
-            ⏬
+            ⬇️
           </span>
         </button>
         <button onClick={() => moveRight()}>
           <span role="img" aria-label="right arrow button">
-            ⏩
+            ➡️
           </span>
         </button>
       </div>

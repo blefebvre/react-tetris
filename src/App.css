@@ -39,6 +39,7 @@ div.cell {
 .Controls button {
   height: 50px;
   width: 50px;
+  font-size: 13px;
   padding: 0;
   margin: 5px;
   display: flex;
