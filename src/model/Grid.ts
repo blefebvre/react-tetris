@@ -59,6 +59,14 @@ export function getGridStateForShape(
 ): NewGridStateResult {
   const newShapeGrid = initEmptyGrid(gridWidth, gridHeight);
 
+  // Shape can be undefined, if the level has not started yet
+  if (!shape) {
+    return {
+      kind: Result.FAILURE,
+      gridState: newShapeGrid,
+    };
+  }
+
   // Choose the shape's position (this is how rotation is implemented)
   const shapePosition: ShapeMatrix = shape.positions[positionIndex % shape.positions.length];
 

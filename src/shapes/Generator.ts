@@ -40,3 +40,8 @@ export function getRandomShapes(count: number): Shape[] {
   }
   return shapes;
 }
+
+export function getNumberOfShapesForLevel(level: number): number {
+  // 30 for level 1, 50 for level 2, 62 level 3, and so on
+  return Math.floor(30 * (Math.log(level) + 1));
+}

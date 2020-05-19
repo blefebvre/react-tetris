@@ -27,10 +27,12 @@ interface Props {
   width: number;
   shapes: Shape[];
   level: number;
+  gameOver(): void;
+  levelComplete(): void;
 }
 
 export function TetrisGrid(props: Props) {
-  const { width, height, shapes, level } = props;
+  const { width, height, shapes, level, gameOver, levelComplete } = props;
 
   // Is the main game loop running?
   const [isRunning, setIsRunning] = useState(true);
@@ -69,7 +71,7 @@ export function TetrisGrid(props: Props) {
 
   function runGameStep(): void {
     // Does the currently active shape have room to move down 1 step?
-    if (canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
+    if (shapes.length === 0 || canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
       // It can't move down then!
       console.log("Active shape CAN'T move down 1 step!");
 
@@ -97,6 +99,7 @@ export function TetrisGrid(props: Props) {
         // Stop the game loop: done!
         console.log("Done! out of shapes.");
         setIsRunning(false);
+        levelComplete();
       }
       return;
     } else {
@@ -112,10 +115,27 @@ export function TetrisGrid(props: Props) {
   ////////////////////////
   useInterval(
     function () {
-      runGameStep();
+      if (shapes.length > 0) {
+        runGameStep();
+      }
     },
     isRunning ? 1000 : null
   ); // Run once a second when isRunning === true
+
+  useEffect(
+    function () {
+      // New shapes have arrived!
+      if (shapes.length > 0 && isRunning === false) {
+        // setGridState(initEmptyGrid(width, height));
+        setActiveShapeRow(0);
+        setActiveShapeCol(Math.floor(width / 2 - 1));
+        setActiveShapePositionIndex(0);
+        setShapeIndex(0);
+        setIsRunning(true);
+      }
+    },
+    [shapes]
+  );
 
   // Handle key presses
   const arrowLeftKeyPressed = useKeyPress("ArrowLeft");
