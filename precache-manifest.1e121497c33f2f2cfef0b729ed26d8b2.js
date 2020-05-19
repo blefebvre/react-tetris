@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "5b86f77cebbb1f21d15d341bfcc001ee",
+    "revision": "e59dd5aec4bb0d13129ea290c6d97e39",
     "url": "/react-tetris/index.html"
   },
   {
