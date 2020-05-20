@@ -66,7 +66,9 @@ export function TetrisGrid(props: Props) {
   );
   let activeShapeGridState: GridState = getShapeGridResult.gridState;
   if (getShapeGridResult.kind === Result.FAILURE) {
-    console.error("Result.FAILURE detected! TODO: handle it!!");
+    console.log(
+      `Failed to get activeShapeGridState! shapeIndex: ${shapeIndex}, activeShapeRow: ${activeShapeRow} (total rows: ${height})`
+    );
   }
 
   function runGameStep(): void {
@@ -89,13 +91,15 @@ export function TetrisGrid(props: Props) {
 
       // Pick the next shape as "active", or finish the game
       const nextShapeIndex = shapeIndex + 1;
+      setShapeIndex(nextShapeIndex);
       if (nextShapeIndex < shapes.length) {
-        setShapeIndex(nextShapeIndex);
+        // There is still at least 1 more shape
         // Reset the active shape's position state
         setActiveShapeRow(0);
         setActiveShapeCol(Math.floor(width / 2 - 1));
         setActiveShapePositionIndex(0);
       } else {
+        // This was the last shape.
         // Stop the game loop: done!
         console.log("Done! out of shapes.");
         setIsRunning(false);

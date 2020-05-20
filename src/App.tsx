@@ -9,8 +9,11 @@ import { Shape } from "./shapes/Shape";
 export function App() {
   // Start at level 1
   const [level, setLevel] = useState(1);
+  // The shapes, ordered by how they will appear. This is empty until "Go" is clicked
   const [shapes, setShapes] = useState<Shape[]>([]);
+  // Overlay which shows the current level and "Go" button
   const [showOverlay, setShowOverlay] = useState(true);
+  // Overlay which shows "Game over"
   const [showGameOver, setShowGameOver] = useState(false);
 
   function goClicked() {
@@ -49,7 +52,11 @@ export function App() {
         Level {level}. Ready? <br /> <button onClick={goClicked}>Go!</button>
       </Overlay>
       <Overlay active={showGameOver}>
-        Game over! <br /> <button onClick={reset}>Play again?</button>
+        Game over{" "}
+        <span role="img" aria-label="confounded face">
+          😖
+        </span>{" "}
+        <br /> <button onClick={reset}>Play again?</button>
       </Overlay>
       <Footer />
     </div>
