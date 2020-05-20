@@ -18,8 +18,9 @@ export function App() {
 
   function goClicked() {
     setShowOverlay(false);
-    //setShapes(getRandomShapes(getNumberOfShapesForLevel(level)));
-    setShapes(getRandomShapes(4));
+    setShapes(getRandomShapes(getNumberOfShapesForLevel(level)));
+    //setShapes(getRandomShapes(4));
+    //setShapes([line(), line(), square()]);
   }
 
   function gameOver() {
@@ -33,9 +34,9 @@ export function App() {
   }
 
   function reset() {
+    setShowGameOver(false);
     setLevel(1);
     setShapes(getRandomShapes(getNumberOfShapesForLevel(1)));
-    setShowGameOver(false);
   }
 
   return (

@@ -18,6 +18,7 @@ import {
   canShapeMoveLeft,
   canShapeMoveRight,
   doesShapeCollideWithAnother,
+  getGameLoopSpeedForLevel,
 } from "./physics/Movement";
 import { Score } from "./Score";
 import { Controls } from "./Controls";
@@ -72,8 +73,14 @@ export function TetrisGrid(props: Props) {
   }
 
   function runGameStep(): void {
+    // Is the game over?
+    if (isGameOver()) {
+      console.log("Done! Game over.");
+      setIsRunning(false);
+      gameOver();
+    }
     // Does the currently active shape have room to move down 1 step?
-    if (shapes.length === 0 || canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
+    else if (shapes.length === 0 || canShapeMoveDown1Step(activeShapeGridState, gridState) === false) {
       // It can't move down then!
       console.log("Active shape CAN'T move down 1 step!");
 
@@ -123,14 +130,19 @@ export function TetrisGrid(props: Props) {
         runGameStep();
       }
     },
-    isRunning ? 1000 : null
+    isRunning ? getGameLoopSpeedForLevel(level) : null
   ); // Run once a second when isRunning === true
 
   useEffect(
     function () {
       // New shapes have arrived!
       if (shapes.length > 0 && isRunning === false) {
-        // setGridState(initEmptyGrid(width, height));
+        if (level === 1) {
+          // Game has been restarted: clear the grid
+          setGridState(initEmptyGrid(width, height));
+          // Reset score
+          setScore(0);
+        }
         setActiveShapeRow(0);
         setActiveShapeCol(Math.floor(width / 2 - 1));
         setActiveShapePositionIndex(0);
@@ -138,6 +150,7 @@ export function TetrisGrid(props: Props) {
         setIsRunning(true);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [shapes]
   );
 
@@ -241,6 +254,14 @@ export function TetrisGrid(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [arrowDownKeyPressed]
   );
+
+  function isGameOver(): boolean {
+    // Is the active shape in it's initial position and already colliding with another shape?
+    if (activeShapeRow === 0 && doesShapeCollideWithAnother(activeShapeGridState, gridState)) {
+      return true;
+    }
+    return false;
+  }
 
   // Put the current shape and the grid together
   const mergedGridState = mergeShapeIntoGrid(activeShapeGridState, gridState);
