@@ -125,8 +125,8 @@ export function moveShapeDown(shape: GridState): GridState {
   return movedShape;
 }
 
-// 1000 for level 1, 722 for level 2, 560 for level 3, 445 for level 4 ...
+// 1000 for level 1, 896 for level 2, 835 for level 3 ...
 export function getGameLoopSpeedForLevel(level: number): number {
   // Speed maxed at 200ms between game loop iterations
-  return Math.max(Math.floor(1000 - 400 * Math.log(level)), 200);
+  return Math.max(Math.floor(1000 - 150 * Math.log(level)), 200);
 }
