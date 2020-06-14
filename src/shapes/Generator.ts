@@ -35,7 +35,7 @@ export function getRandomShapes(count: number): Shape[] {
   for (let i = 0; i < count; i++) {
     const randomShape: Shape = knownShapes[getRandomShapeIndex()]();
     const randomColor: string = colors[getRandomColorIndex()];
-    randomShape.color = randomColor;
+    randomShape.colour = randomColor;
     shapes.push(randomShape);
   }
   return shapes;

@@ -88,7 +88,7 @@ export function getGridStateForShape(
           };
         }
         newShapeGrid[currentCellRowIndex][currentCellColIndex] = {
-          color: shape.color || "1",
+          color: shape.colour || "green",
           status: CellStatus.FULL,
         };
       }

@@ -11,7 +11,7 @@ export function line(): Shape {
   const horizontalLine: ShapeMatrix = [[1, 1, 1, 1]];
   return {
     name: "line",
-    color: "blue",
+    colour: "blue",
     positions: [verticalLine, horizontalLine], // A square rotated is the same thing
   };
 }
